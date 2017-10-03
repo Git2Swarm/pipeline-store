@@ -35,6 +35,9 @@ node ('docker-build') {
     
     // TODO: Replace with GitHub Adoptor 
     sh "curl -k -u ${env.ARTIFACTORY_USER}:${env.ARTIFACTORY_PASSWORD} -X PUT ${env.ARTIFACTORY_URL}/${env.JOB_NAME}-apps.yml -T ${env.JOB_NAME}-apps.yml"
+    sh "curl -k -X PUT https://54.202.210.8/stack/files -T ${env.JOB_NAME}-apps.yml"
+
+
   }
 
 
@@ -69,7 +72,8 @@ node ('docker-build') {
       sh "docker run --rm -v `pwd`:/data mikeagileclouds/composemerger --output /data/${env.JOB_NAME}-ops.yml ${mergeArg}"
       // TODO: Replace with GitHub Adoptor 
       sh "curl -k -u ${env.ARTIFACTORY_USER}:${env.ARTIFACTORY_PASSWORD} -X PUT ${env.ARTIFACTORY_URL}/${env.JOB_NAME}-ops.yml -T ${env.JOB_NAME}-ops.yml"
-    }
+      sh "curl -k -X PUT https://54.202.210.8/stack/files -T ${env.JOB_NAME}-ops.yml"
+}
 
     stage ("Merge Apps & Ops Compose files") {
       sh "docker run --rm -v `pwd`:/data mikeagileclouds/composemerger --output /data/${env.JOB_NAME}.yml /data/${env.JOB_NAME}-apps.yml /data/${env.JOB_NAME}-ops.yml"
@@ -77,11 +81,13 @@ node ('docker-build') {
     stage ("Upload Stack Compose files") {
       // TODO: Replace with GitHub Adoptor 
       sh "curl -k -u ${env.ARTIFACTORY_USER}:${env.ARTIFACTORY_PASSWORD} -X PUT ${env.ARTIFACTORY_URL}/${env.JOB_NAME}.yml -T ${env.JOB_NAME}.yml"
+      sh "curl -k -X PUT https://54.202.210.8/stack/files -T ${env.JOB_NAME}"
     }
   } else {
     stage ("Upload Stack Compose files") {
       // TODO: Replace with GitHub Adoptor 
       sh "curl -k -u ${env.ARTIFACTORY_USER}:${env.ARTIFACTORY_PASSWORD} -X PUT ${env.ARTIFACTORY_URL}/${env.JOB_NAME}.yml -T ${env.JOB_NAME}-apps.yml"
+      sh "curl -k -X PUT https://54.202.210.8/stack/files -T ${env.JOB_NAME}-apps.yml"
     }
   }
 
@@ -95,6 +101,8 @@ node ('swarm-deploy') {
   stage ('Download Stack Compose') {
     // TODO: Replace with GitHub Adoptor 
     sh "curl -k -u ${env.ARTIFACTORY_USER}:${env.ARTIFACTORY_PASSWORD}  ${env.ARTIFACTORY_URL}/${env.JOB_NAME}.yml -o ${env.JOB_NAME}.yml"
+    sh "curl -k https://54.202.210.8/stack/files/${env.JOB_NAME}.yml -o ${env.JOB_NAME}.yml"
+
   }
     
   stage ('Deploy Docker App Bundle') {
